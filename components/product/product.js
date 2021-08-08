@@ -5,6 +5,7 @@ export default function product({
   productName,
   productDescription,
   productImagePath,
+  productPrice,
   addCartHandler,
 }) {
   const handleAddCart = (e) => {
@@ -32,6 +33,8 @@ export default function product({
         <div className="card-body">
           <h5 className="card-title">{productName}</h5>
           <p className="card-text">{productDescription}</p>
+          <small>{productPrice}</small>
+          <br />
           <button
             className="btn btn-primary"
             value={productID}

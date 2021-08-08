@@ -16,6 +16,13 @@ let redis = new Redis(process.env.REDIS_URL);
 export default function Home({ data, products }) {
   const [count, setCount] = useState(data);
   const [onModal, setOnModal] = useState(false);
+  const [addedItem, setAddedItem] = useState({
+    itemName: "",
+    itemDescription: "",
+    itemPrice: "",
+    itemImage: "",
+  });
+  const [userPicks, setUserPicks] = useState([]);
 
   const increment = async () => {
     const response = await fetch("/api/incr", { method: "POST" });
@@ -25,6 +32,34 @@ export default function Home({ data, products }) {
 
   const setOnModalHandler = (e) => {
     setOnModal((prev) => !prev);
+  };
+
+  const addItemHandler = (e) => {
+    let tempAddedItem = { ...addedItem };
+    switch (e.target.id) {
+      case "itemName":
+        tempAddedItem.itemName = e.target.value;
+        break;
+      case "itemDescription":
+        tempAddedItem.itemDescription = e.target.value;
+        break;
+      case "itemPrice":
+        tempAddedItem.itemPrice = e.target.value;
+        break;
+      case "itemImage":
+        tempAddedItem.itemImage = e.target.files[0];
+        break;
+    }
+    setAddedItem(tempAddedItem);
+  };
+
+  const submitItemHandler = async (e) => {
+    const response = await fetch("/api/addNewItem", {
+      method: "POST",
+      body: JSON.stringify(addedItem),
+    });
+    const data = await response.json();
+    console.log(data);
   };
 
   return (
@@ -60,12 +95,64 @@ export default function Home({ data, products }) {
                 productID={item.id}
                 productName={item.name}
                 productDescription={item.description}
+                productPrice={item.price}
                 productImagePath={item.imagePath}
               />
             );
           })}
         </div>
 
+        <br />
+        <br />
+        <br />
+
+        <h2 className="row">Add an Item to the Shop</h2>
+        <div>
+          <div class="form-group">
+            <label for="itemName">Item Name</label>
+            <input
+              type="text"
+              className="form-control"
+              id="itemName"
+              placeholder="Item Name"
+              onChange={addItemHandler}
+            />
+          </div>
+          <div class="form-group">
+            <label for="itemDescription">Description</label>
+            <input
+              type="email"
+              className="form-control"
+              id="itemDescription"
+              placeholder="Description"
+              onChange={addItemHandler}
+            />
+          </div>
+          <div class="form-group">
+            <label for="itemPrice">Price</label>
+            <input
+              type="text"
+              className="form-control"
+              id="itemPrice"
+              placeholder="Price"
+              onChange={addItemHandler}
+            />
+          </div>
+          <div className="row">
+            <input type="file" id="itemImage" onChange={addItemHandler} />
+          </div>
+          <br />
+          <button
+            className="btn btn-primary"
+            type="button"
+            onClick={submitItemHandler}
+          >
+            Add Item
+          </button>
+        </div>
+
+        <br />
+        <br />
         <h6>{count}</h6>
         <button className="btn btn-primary" type="button" onClick={increment}>
           Manual Increment (+1)
@@ -88,19 +175,6 @@ export default function Home({ data, products }) {
 export async function getServerSideProps() {
   const data = await redis.get("counter");
 
-  // const products = [
-  //   {
-  //     productID: 1,
-  //     productName: "Slipper",
-  //     productDescription: "Slippers are good for walking around!!",
-  //   },
-  //   {
-  //     productID: 1,
-  //     productName: "Shopping Bag",
-  //     productDescription: "This Bag is good for carrying things!",
-  //     imagePath: "images/shoppingBags.jpg",
-  //   },
-  // ];
   let products = await getAllProducts();
   console.log(products);
   return { props: { data, products } };

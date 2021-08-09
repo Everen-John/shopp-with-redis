@@ -1,7 +1,7 @@
 import Head from "next/head";
 import styles from "../styles/Home.module.css";
 import Redis from "ioredis";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 
 import Product from "../components/product/product";
@@ -13,7 +13,7 @@ import getAllProducts from "../lib/redis/getAllProducts";
 
 let redis = new Redis(process.env.REDIS_URL);
 
-export default function Home({ data, products }) {
+export default function Home({ data, products, cartCount }) {
   const [count, setCount] = useState(data);
   const [onModal, setOnModal] = useState(false);
   const [addedItem, setAddedItem] = useState({
@@ -23,6 +23,13 @@ export default function Home({ data, products }) {
     itemImage: "",
   });
   const [userPicks, setUserPicks] = useState([]);
+  const [cartItemNumber, setCartItemNumber] = useState(cartCount);
+
+  useEffect(() => {}, []);
+
+  useEffect(() => {
+    setCartItemNumber(userPicks.length);
+  }, [userPicks]);
 
   const increment = async () => {
     const response = await fetch("/api/incr", { method: "POST" });
@@ -59,7 +66,16 @@ export default function Home({ data, products }) {
       body: JSON.stringify(addedItem),
     });
     const data = await response.json();
-    console.log(data);
+  };
+
+  const addCartHandler = async (productID) => {
+    const response = await fetch("/api/addToCart", {
+      method: "POST",
+      body: JSON.stringify(productID),
+    });
+    const data = await response.json().then((data) => {
+      setUserPicks(data.responseDataFiltered);
+    });
   };
 
   return (
@@ -81,6 +97,7 @@ export default function Home({ data, products }) {
               height="50"
               layout="fixed"
             />
+            <small>{cartItemNumber}</small>
           </button>
         </div>
         <h1>Welcome to Shopp!</h1>
@@ -97,6 +114,7 @@ export default function Home({ data, products }) {
                 productDescription={item.description}
                 productPrice={item.price}
                 productImagePath={item.imagePath}
+                addCartHandler={addCartHandler}
               />
             );
           })}
@@ -108,7 +126,7 @@ export default function Home({ data, products }) {
 
         <h2 className="row">Add an Item to the Shop</h2>
         <div>
-          <div class="form-group">
+          <div className="form-group">
             <label for="itemName">Item Name</label>
             <input
               type="text"
@@ -118,7 +136,7 @@ export default function Home({ data, products }) {
               onChange={addItemHandler}
             />
           </div>
-          <div class="form-group">
+          <div className="form-group">
             <label for="itemDescription">Description</label>
             <input
               type="email"
@@ -128,7 +146,7 @@ export default function Home({ data, products }) {
               onChange={addItemHandler}
             />
           </div>
-          <div class="form-group">
+          <div className="form-group">
             <label for="itemPrice">Price</label>
             <input
               type="text"
@@ -176,6 +194,6 @@ export async function getServerSideProps() {
   const data = await redis.get("counter");
 
   let products = await getAllProducts();
-  console.log(products);
-  return { props: { data, products } };
+  let cartCount = 0;
+  return { props: { data, products, cartCount } };
 }

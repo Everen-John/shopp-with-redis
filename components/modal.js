@@ -1,9 +1,27 @@
-import React from "react";
+import { React, useState, useEffect } from "react";
 
 export default function modal({ showModal, setShowModal }) {
+  const [cartData, setcartData] = useState([]);
+  const [price, setPrice] = useState(0);
+  useEffect(async () => {
+    const response = await fetch("/api/showCartItems", {
+      method: "GET",
+    });
+    const data = await response.json();
+    let tempPrice = 0;
+    let processor = 0;
+    data.map((item) => {
+      processor = item.price.replace("RM", "");
+      processor = parseFloat(processor);
+      tempPrice += processor;
+    });
+    setPrice(tempPrice.toFixed(2));
+    setcartData(data);
+  }, [showModal ? showModal : null]);
+
   return (
     <div
-      className="modal-lg position-fixed modal-custom"
+      className="modal-fullscreen position-fixed modal-custom"
       tabindex="-1"
       role="dialog"
     >
@@ -21,24 +39,16 @@ export default function modal({ showModal, setShowModal }) {
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
-          <div className="modal-body">
-            <div className="row">
-              <div>Test</div>
-            </div>
-            <div className="row">
-              <div>Test</div>
-            </div>
-            <div className="row">
-              <div>Test</div>
-            </div>
-            <div className="row">
-              <div>Test</div>
-            </div>
-            <div className="row">
-              <div>Test</div>
-            </div>
+          <div className="modal-dialog-scrollable">
+            {cartData.map((item) => (
+              <div className="row">
+                <p className="col-9">{item.name}</p>
+                <p className="col-3">{item.price}</p>
+              </div>
+            ))}
           </div>
           <div className="modal-footer">
+            <p>{price}</p>
             <button
               type="button"
               className="btn btn-secondary"

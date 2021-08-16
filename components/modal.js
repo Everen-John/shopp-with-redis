@@ -21,7 +21,7 @@ export default function modal({ showModal, setShowModal }) {
 
   return (
     <div
-      className="modal-fullscreen position-fixed modal-custom"
+      className="modal-fullscreen shadow-lg position-fixed modal-custom"
       tabindex="-1"
       role="dialog"
     >
@@ -42,8 +42,8 @@ export default function modal({ showModal, setShowModal }) {
           <div className="modal-dialog-scrollable">
             {cartData.map((item) => (
               <div className="row">
-                <p className="col-9">{item.name}</p>
-                <p className="col-3">{item.price}</p>
+                <p className="col-9 p-4">{item.name}</p>
+                <p className="col-3 p-4">{item.price}</p>
               </div>
             ))}
           </div>

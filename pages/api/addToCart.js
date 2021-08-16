@@ -6,8 +6,8 @@ export default async function addToCart(req, res) {
     let productNo = JSON.parse(req.body);
     let responseData = await redis
       .multi()
-      .rpush("userCartItems", productNo)
-      .lrange("userCartItems", "-999", "999")
+      .rpush("cartItems", productNo)
+      .lrange("cartItems", "-999", "999")
       .exec();
 
     redis.disconnect();

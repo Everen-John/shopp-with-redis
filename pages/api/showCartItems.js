@@ -5,7 +5,7 @@ export default async function addToCart(req, res) {
     let redis = new Redis(process.env.REDIS_URL);
 
     //Get List of Items's Number
-    let responseData = await redis.lrange("userCartItems", "-999", "999");
+    let responseData = await redis.lrange("cartItems", "-999", "999");
 
     //Get List of Item's data
     let productArray = [];
